@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KB-X300 App</title>
+<style>
+  :root {
+    --bg: #0f1115; --card: #171a21; --card2: #1d2129; --line: #2a2f39; --text: #e9eaee; --muted: #8b93a1;
+    --accent: #e5d84a; --red: #ef4444; --green: #22c55e; --blue: #60a5fa; --amber: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 24px; border-bottom: 1px solid var(--line); background: #12151b; position: sticky; top: 0; z-index: 5; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: .3px; margin-right: auto; }
+  .brand .lens { width: 22px; height: 22px; border-radius: 50%; border: 4px solid var(--accent); box-shadow: 0 0 12px #e5d84a66; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { display: flex; align-items: center; gap: 6px; padding: 6px 11px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; font-size: 12.5px; color: var(--muted); }
+  .chip b { color: var(--text); font-weight: 600; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .dot.off { background: var(--red); }
+  main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 40px; display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 16px; } header { padding: 12px 16px; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .card h2 { margin: 0 0 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); display: flex; align-items: center; justify-content: space-between; }
+  .alert { grid-column: 1 / -1; display: none; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 14px; background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.4); color: #fcd9a0; }
+  .alert.show { display: flex; }
+  .alert.err { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.45); color: #fecaca; }
+  .alert b { color: #fff; }
+
+  .video { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+  .video img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .video .wait { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 13px; text-align: center; }
+  .badges { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; }
+  .badge { padding: 4px 9px; border-radius: 6px; font: 700 11px system-ui; letter-spacing: .6px; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); }
+  .badge.live { color: var(--green); } .badge.rec { color: #fff; background: var(--red); display: none; }
+  .badge.rec.show { display: block; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: .55; } }
+
+  .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+  @media (max-width: 600px) { .controls { grid-template-columns: 1fr; } }
+  .group { background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .group .ttl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); margin-bottom: 10px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { font: inherit; cursor: pointer; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 16px; border-radius: 10px; border: 1px solid #39404c; background: #262b35; color: #f3f4f6; font-weight: 700; transition: background .12s, transform .05s; flex: 1; white-space: nowrap; }
+  .btn:hover { background: #303643; }
+  .btn:active { transform: scale(.97); }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn.rec { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn.rec:hover { background: #f05252; }
+  .btn.rec.active { background: #fff; color: var(--red); border-color: #fff; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #111; }
+  .btn.primary:hover { background: #f0e45c; }
+  .btn.small { flex: none; padding: 6px 10px; font-size: 12px; border-radius: 8px; }
+  .btn.ghost { background: transparent; }
+  .btn.danger:hover { background: rgba(239,68,68,.15); border-color: var(--red); color: #fecaca; }
+  .ico { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+  .btn.rec.active .ico { border-radius: 2px; }
+
+  .settings { display: grid; gap: 12px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  select { width: 100%; padding: 9px 10px; background: #0f1115; color: var(--text); border: 1px solid var(--line); border-radius: 9px; font: inherit; outline: none; cursor: pointer; }
+  select:focus { border-color: var(--accent); }
+  select.saving { border-color: var(--amber); }
+
+  .files { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 10px; border-bottom: 1px solid #22262e; vertical-align: middle; }
+  td.name { font-family: ui-monospace, Consolas, monospace; font-size: 13px; word-break: break-all; }
+  td.acts { text-align: right; white-space: nowrap; }
+  td.acts .btn { margin-left: 4px; }
+  .empty { color: var(--muted); text-align: center; padding: 26px 10px; }
+  .tag { font-size: 11px; padding: 2px 7px; border-radius: 5px; background: #262b35; color: var(--muted); margin-left: 6px; }
+
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; background: #262b35; border: 1px solid #39404c; color: #fff; padding: 11px 16px; border-radius: 10px; transition: .2s; pointer-events: none; max-width: calc(100% - 32px); z-index: 10; }
+  .toast.show { opacity: 1; transform: translateX(-50%); }
+  .toast.err { border-color: var(--red); }
+  .muted { color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="lens"></span>KB-X300</div>
+  <div class="chips">
+    <div class="chip"><span class="dot" id="connDot"></span><b id="connTxt">Conectando…</b></div>
+    <div class="chip">🔋 <b id="battery">—</b></div>
+    <div class="chip">💾 <b id="sd">—</b></div>
+    <div class="chip">Modo <b id="mode">—</b></div>
+  </div>
+</header>
+
+<main>
+  <div class="alert err" id="offline">
+    <div>📡</div>
+    <div><b>No encuentro la cámara.</b> Enciéndela, activa su WiFi y conecta esta PC a la red <b>KB-X300</b>. La app se reconecta sola.</div>
+  </div>
+  <div class="alert" id="sdAlert">
+    <div>⚠️</div>
+    <div><b>La memoria de la cámara está llena o no se reconoce.</b> No podrá grabar ni tomar fotos en la cámara.
+      Revisa que tenga la micro SD puesta o formatéala desde la cámara. Mientras tanto puedes usar <b>Grabar en PC</b> y <b>Foto a PC</b>.</div>
+  </div>
+
+  <section class="card">
+    <h2>En vivo <span class="muted" id="fps" style="text-transform:none;letter-spacing:0;font-weight:500"></span></h2>
+    <div class="video">
+      <img id="live" alt="">
+      <div class="wait" id="wait">Conectando video…<br>puede tardar unos segundos</div>
+      <div class="badges">
+        <span class="badge live">● EN VIVO</span>
+        <span class="badge rec" id="camRecBadge">REC CÁMARA</span>
+        <span class="badge rec" id="pcRecBadge">REC PC</span>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="group">
+        <div class="ttl">En la cámara (memoria SD)</div>
+        <div class="row">
+          <button class="btn rec" id="camRec"><span class="ico"></span><span>Grabar</span></button>
+          <button class="btn" id="camPhoto">📷 Foto</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="ttl">En esta PC</div>
+        <div class="row">
+          <button class="btn rec" id="pcRec"><span class="ico"></span><span>Grabar en PC</span></button>
+          <button class="btn" id="pcPhoto">📷 Foto a PC</button>
+          <button class="btn small ghost" id="pcOpen" title="Abrir carpeta de capturas">📁</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="card">
+    <h2>Ajustes</h2>
+    <div class="settings" id="settings"><div class="muted">Cargando…</div></div>
+  </aside>
+
+  <section class="card files">
+    <h2>Archivos en la cámara <button class="btn small" id="refreshFiles">↻ Actualizar</button></h2>
+    <table>
+      <thead><tr><th>Archivo</th><th>Fecha</th><th>Tamaño</th><th></th></tr></thead>
+      <tbody id="fileRows"><tr><td colspan="4" class="empty">Cargando…</td></tr></tbody>
+    </table>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let settingsDef = null, lastStatus = null, toastTimer;
+
+function toast(msg, err) {
+  const t = $('toast');
+  t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = 'toast', 3200);
+}
+
+async function api(path, method = 'GET') {
+  const r = await fetch(path, { method });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.ok === false) throw new Error(j.error || j.msg || ('Error ' + (j.code ?? r.status)));
+  return j;
+}
+
+// ---------- Estado ----------
+const fmtTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+
+async function refreshStatus() {
+  let s;
+  try { s = await api('/api/status'); }
+  catch (e) {
+    $('connDot').className = 'dot off'; $('connTxt').textContent = 'Sin conexión';
+    $('offline').classList.add('show'); $('sdAlert').classList.remove('show');
+    return;
+  }
+  lastStatus = s;
+  $('offline').classList.remove('show');
+  $('connDot').className = 'dot on'; $('connTxt').textContent = 'Conectada';
+  const b = parseInt(s.battery, 10);
+  $('battery').textContent = isNaN(b) ? '—' : b > 100 ? 'Cargando' : b + '%';
+  const sdBad = /FULL|NO|ERR/i.test(s.sd);
+  $('sd').textContent = sdBad ? (/FULL/i.test(s.sd) ? 'Llena / no se lee' : s.sd) : (s.sd || 'OK');
+  $('sdAlert').classList.toggle('show', sdBad);
+  $('mode').textContent = /photo|camera|capture/i.test(s.mode + s.uiMode) ? 'Foto' : 'Video';
+
+  $('camRec').classList.toggle('active', s.recording);
+  $('camRec').querySelector('span:last-child').textContent = s.recording ? 'Detener' : 'Grabar';
+  $('camRecBadge').classList.toggle('show', s.recording);
+
+  $('pcRec').classList.toggle('active', s.pcRecording);
+  $('pcRec').querySelector('span:last-child').textContent = s.pcRecording ? 'Detener ' + fmtTime(s.pcRecSeconds) : 'Grabar en PC';
+  $('pcRecBadge').classList.toggle('show', s.pcRecording);
+  $('pcRecBadge').textContent = 'REC PC ' + fmtTime(s.pcRecSeconds);
+  $('fps').textContent = s.liveFps ? `${s.liveFps} fps` : '';
+
+  if (settingsDef) {
+    for (const [k, v] of Object.entries(s.settings)) {
+      const sel = $('set-' + k);
+      if (sel && !sel.classList.contains('saving') && document.activeElement !== sel) sel.value = v;
+    }
+  }
+}
+
+// ---------- Ajustes ----------
+async function loadSettings() {
+  try { settingsDef = await api('/api/settings'); } catch { return setTimeout(loadSettings, 3000); }
+  $('settings').innerHTML = Object.entries(settingsDef).map(([k, d]) => `
+    <div class="field"><label for="set-${k}">${esc(d.label)}</label>
+      <select id="set-${k}" data-prop="${k}">${d.options.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select>
+    </div>`).join('');
+  document.querySelectorAll('#settings select').forEach(sel => sel.onchange = async () => {
+    sel.classList.add('saving');
+    try {
+      await api(`/api/set?prop=${encodeURIComponent(sel.dataset.prop)}&value=${encodeURIComponent(sel.value)}`, 'POST');
+      toast('✓ ' + settingsDef[sel.dataset.prop].label + ': ' + sel.selectedOptions[0].text);
+    } catch (e) { toast('No se pudo cambiar: ' + e.message, true); }
+    sel.classList.remove('saving');
+    refreshStatus();
+  });
+  refreshStatus();
+}
+
+// ---------- Botones ----------
+$('camRec').onclick = async () => {
+  try {
+    await api('/api/record', 'POST');
+    toast(lastStatus?.recording ? 'Deteniendo grabación…' : 'Grabando en la cámara…');
+    setTimeout(refreshStatus, 1200);
+    setTimeout(loadFiles, 2500);
+  } catch (e) { toast('La cámara no respondió: ' + e.message, true); }
+};
+$('camPhoto').onclick = async () => {
+  try { await api('/api/photo', 'POST'); toast('📷 Foto enviada a la cámara'); setTimeout(loadFiles, 2500); }
+  catch (e) { toast('No se pudo tomar la foto: ' + e.message, true); }
+};
+$('pcPhoto').onclick = async () => {
+  try { const r = await api('/api/pc/photo', 'POST'); toast('📷 Guardada: ' + r.path.split(/[\\/]/).pop()); }
+  catch (e) { toast(e.message, true); }
+};
+$('pcRec').onclick = async () => {
+  try {
+    const r = await api('/api/pc/record', 'POST');
+    toast(r.recording ? '⏺ Grabando en la PC…' : '✓ Video guardado: ' + r.path.split(/[\\/]/).pop());
+    refreshStatus();
+  } catch (e) { toast(e.message, true); }
+};
+$('pcOpen').onclick = () => api('/api/pc/open', 'POST').catch(e => toast(e.message, true));
+
+// ---------- Archivos ----------
+const fmtSize = (n) => { n = +n; if (!n) return '—'; const u = ['B', 'KB', 'MB', 'GB']; let i = 0; while (n >= 1024 && i < 3) { n /= 1024; i++; } return n.toFixed(i ? 1 : 0) + ' ' + u[i]; };
+
+async function loadFiles() {
+  const rows = $('fileRows');
+  let files;
+  try { files = await api('/api/files'); }
+  catch { rows.innerHTML = '<tr><td colspan="4" class="empty">No se pudo leer la lista de archivos.</td></tr>'; return; }
+  if (!files.length) { rows.innerHTML = '<tr><td colspan="4" class="empty">No hay archivos en la cámara.</td></tr>'; return; }
+  rows.innerHTML = files.map(f => {
+    const base = f.name.split('/').pop(), ext = (base.split('.').pop() || '').toUpperCase();
+    const q = encodeURIComponent(f.name);
+    return `<tr>
+      <td class="name">${esc(base)}<span class="tag">${esc(ext)}</span></td>
+      <td class="muted">${esc(f.time || '—')}</td>
+      <td class="muted">${fmtSize(f.size)}</td>
+      <td class="acts">
+        <a class="btn small" href="/api/file?path=${q}" target="_blank">Ver</a>
+        <a class="btn small" href="/api/file?path=${q}&download=1">⬇ Descargar</a>
+        <button class="btn small danger" data-del="${esc(f.name)}">Borrar</button>
+      </td></tr>`;
+  }).join('');
+  rows.querySelectorAll('[data-del]').forEach(b => b.onclick = async () => {
+    const name = b.dataset.del;
+    if (!confirm('¿Borrar ' + name.split('/').pop() + ' de la cámara? No se puede deshacer.')) return;
+    try { await api('/api/delete?path=' + encodeURIComponent(name), 'POST'); toast('Archivo borrado'); loadFiles(); }
+    catch (e) { toast('No se pudo borrar: ' + e.message, true); }
+  });
+}
+$('refreshFiles').onclick = loadFiles;
+
+// ---------- Video en vivo ----------
+function startLive() {
+  const img = $('live');
+  img.src = '/stream.mjpg?t=' + Date.now();
+  const check = setInterval(() => { if (img.naturalWidth) { $('wait').style.display = 'none'; clearInterval(check); } }, 300);
+  img.onerror = () => { clearInterval(check); $('wait').style.display = 'grid'; setTimeout(startLive, 3000); };
+}
+
+loadSettings();
+loadFiles();
+startLive();
+setInterval(refreshStatus, 2000);
+</script>
+</body>
+</html>
