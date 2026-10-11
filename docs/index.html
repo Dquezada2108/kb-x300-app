@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KB-X300 App</title>
+<meta name="description" content="App propia y gratuita para controlar por WiFi la cámara de acción Kaiser Baas X300: video en vivo, grabar, fotos y ajustes desde tu PC.">
+<style>
+  :root {
+    --bg: #0f1115; --card: #171a21; --card2: #1d2129; --line: #2a2f39; --text: #e9eaee; --muted: #8b93a1;
+    --accent: #e5d84a; --red: #ef4444; --green: #22c55e;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 600px) { .wrap { padding: 0 16px; } }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; color: var(--text); text-decoration: none; }
+  .lens { width: 22px; height: 22px; border-radius: 50%; border: 4px solid var(--accent); box-shadow: 0 0 14px #e5d84a66; flex: none; }
+  nav .links a { color: var(--muted); text-decoration: none; margin-left: 20px; font-size: 14px; }
+  nav .links a:hover { color: var(--text); }
+  @media (max-width: 600px) { nav .links a:not(:last-child) { display: none; } }
+
+  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; padding: 48px 0 72px; }
+  @media (max-width: 900px) { .hero { grid-template-columns: 1fr; gap: 36px; padding-top: 24px; } }
+  .eyebrow { display: inline-block; font-size: 12.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--accent); background: rgba(229,216,74,.1); border: 1px solid rgba(229,216,74,.3); padding: 5px 11px; border-radius: 999px; }
+  h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.08; margin: 18px 0 16px; letter-spacing: -.5px; }
+  h1 span { color: var(--accent); }
+  .lead { font-size: 18px; color: #c3c8d1; margin: 0 0 28px; max-width: 34em; }
+  .ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 13px 20px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 1px solid #39404c; background: #262b35; color: #f3f4f6; transition: background .12s, transform .05s; }
+  .btn:hover { background: #303643; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #111; }
+  .btn.primary:hover { background: #f0e45c; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 14px; }
+
+  /* Mockup de la app (dibujado con CSS, no es una captura) */
+  .mock { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  .mock-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .mock-top .t { display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: 13px; margin-right: auto; }
+  .mock-top .t .lens { width: 14px; height: 14px; border-width: 3px; }
+  .pill { font-size: 11px; padding: 4px 9px; border-radius: 999px; background: var(--card2); border: 1px solid var(--line); color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .pill i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .screen { position: relative; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; border: 1px solid var(--line);
+            background: radial-gradient(120% 90% at 70% 20%, #3b6a8f 0%, #1d3448 40%, #0d1620 75%); }
+  .screen::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(180deg, #1b2a1d, #0e1610); clip-path: polygon(0 40%, 18% 22%, 35% 38%, 52% 12%, 70% 34%, 86% 20%, 100% 30%, 100% 100%, 0 100%); }
+  .screen::after { content: ""; position: absolute; width: 16%; aspect-ratio: 1; border-radius: 50%; top: 14%; left: 18%; background: radial-gradient(circle, #ffe9a8 0%, #f5c55a 45%, transparent 70%); }
+  .live { position: absolute; top: 9px; left: 9px; font: 700 10px system-ui; letter-spacing: .5px; color: var(--green); background: rgba(0,0,0,.55); padding: 3px 7px; border-radius: 5px; z-index: 1; }
+  .recb { position: absolute; top: 9px; right: 9px; font: 700 10px system-ui; color: #fff; background: var(--red); padding: 3px 7px; border-radius: 5px; z-index: 1; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: .55; } }
+  .mock-ctrl { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .mb { padding: 9px 0; text-align: center; border-radius: 9px; font-size: 12px; font-weight: 700; background: #262b35; border: 1px solid #39404c; }
+  .mb.r { background: var(--red); border-color: var(--red); }
+  .mock-set { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .ms { font-size: 11px; color: var(--muted); background: #0f1115; border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; display: flex; justify-content: space-between; }
+  .ms b { color: var(--text); font-weight: 600; }
+
+  section { padding: 64px 0; border-top: 1px solid #1c2028; }
+  h2 { font-size: clamp(26px, 3.5vw, 34px); margin: 0 0 10px; letter-spacing: -.3px; }
+  .sub { color: var(--muted); margin: 0 0 32px; max-width: 40em; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+  .feat { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .feat .ic { font-size: 22px; width: 42px; height: 42px; display: grid; place-items: center; background: var(--card2); border: 1px solid var(--line); border-radius: 11px; margin-bottom: 12px; }
+  .feat h3 { margin: 0 0 6px; font-size: 16px; }
+  .feat p { margin: 0; color: var(--muted); font-size: 14.5px; }
+
+  .steps { display: grid; gap: 14px; counter-reset: s; }
+  .step { display: grid; grid-template-columns: 44px 1fr; gap: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+  .step::before { counter-increment: s; content: counter(s); width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #111; background: var(--accent); }
+  .step h3 { margin: 0 0 4px; font-size: 16px; }
+  .step p { margin: 0; color: var(--muted); font-size: 14.5px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: .9em; background: #262b35; padding: 2px 6px; border-radius: 5px; color: #f3f4f6; }
+  pre { background: #0b0d11; border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; margin: 10px 0 0; }
+  pre code { background: none; padding: 0; }
+
+  .tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid #22262e; font-size: 14px; vertical-align: top; }
+  th { background: var(--card); color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
+  tr:last-child td { border-bottom: 0; }
+  td code { white-space: nowrap; }
+
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; margin-bottom: 10px; }
+  summary { cursor: pointer; font-weight: 700; }
+  details p { color: var(--muted); margin: 10px 0 0; }
+
+  footer { border-top: 1px solid #1c2028; padding: 32px 0 48px; color: var(--muted); font-size: 13.5px; }
+  footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#"><span class="lens"></span>KB-X300 App</a>
+    <div class="links">
+      <a href="#funciones">Funciones</a>
+      <a href="#instalar">Instalar</a>
+      <a href="#tecnico">Cómo funciona</a>
+      <a href="https://github.com/Dquezada2108/kb-x300-app">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <span class="eyebrow">Gratis · Código abierto</span>
+      <h1>Tu <span>Kaiser Baas X300</span> vuelve a tener app.</h1>
+      <p class="lead">La app oficial "KB X300" desapareció de la App Store. Esta la reemplaza: ves el video en vivo, grabas, tomas fotos y cambias los ajustes de la cámara por WiFi desde tu computadora.</p>
+      <div class="ctas">
+        <a class="btn primary" href="https://github.com/Dquezada2108/kb-x300-app/archive/refs/heads/main.zip">⬇ Descargar</a>
+        <a class="btn" href="https://github.com/Dquezada2108/kb-x300-app">Ver en GitHub</a>
+      </div>
+      <p class="note">Para Windows, macOS y Linux. Requiere Python 3.10 o más reciente.</p>
+    </div>
+    <div class="mock" aria-hidden="true">
+      <div class="mock-top">
+        <div class="t"><span class="lens"></span>KB-X300</div>
+        <span class="pill"><i></i>Conectada</span>
+        <span class="pill">🔋 85%</span>
+      </div>
+      <div class="screen"><span class="live">● EN VIVO</span><span class="recb">REC 00:42</span></div>
+      <div class="mock-ctrl"><div class="mb r">● Grabar</div><div class="mb">📷 Foto</div><div class="mb">📁 Capturas</div></div>
+      <div class="mock-set">
+        <div class="ms">Video <b>1080p · 60</b></div>
+        <div class="ms">Foto <b>12 MP</b></div>
+        <div class="ms">Exposición <b>0</b></div>
+        <div class="ms">Balance <b>Auto</b></div>
+      </div>
+    </div>
+  </header>
+</div>
+
+<section id="funciones">
+  <div class="wrap">
+    <h2>Todo lo que hacía la app oficial, y algo más</h2>
+    <p class="sub">Funciona directo contra la cámara. No necesita cuenta, nube ni internet.</p>
+    <div class="grid">
+      <div class="feat"><div class="ic">📡</div><h3>Video en vivo</h3><p>Mira en tu pantalla lo que ve la cámara, por ejemplo para encuadrar antes de grabar.</p></div>
+      <div class="feat"><div class="ic">⏺</div><h3>Grabar y foto en la cámara</h3><p>Controla la grabación y toma fotos a distancia. Todo se guarda en la micro SD de la cámara.</p></div>
+      <div class="feat"><div class="ic">💻</div><h3>Grabar en la PC</h3><p>Guarda video y fotos del video en vivo directo en tu computadora, aunque la cámara no tenga memoria.</p></div>
+      <div class="feat"><div class="ic">⚙️</div><h3>Ajustes completos</h3><p>Resolución de video (4K a 720p·120), foto, exposición, balance de blancos, timelapse, HDR, imagen invertida y más.</p></div>
+      <div class="feat"><div class="ic">🗂️</div><h3>Tus archivos</h3><p>Revisa los videos y fotos de la cámara, descárgalos a tu PC o bórralos para liberar espacio.</p></div>
+      <div class="feat"><div class="ic">🔋</div><h3>Estado al instante</h3><p>Batería, memoria, modo y conexión siempre a la vista. Si la cámara se desconecta, la app se reconecta sola.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="instalar">
+  <div class="wrap">
+    <h2>Instalación en 4 pasos</h2>
+    <p class="sub">Se hace una sola vez y toma unos 5 minutos.</p>
+    <div class="steps">
+      <div class="step"><div><h3>Instala Python</h3><p>Descárgalo de <a href="https://www.python.org/downloads/">python.org</a>. En Windows marca la casilla <b>"Add Python to PATH"</b> durante la instalación.</p></div></div>
+      <div class="step"><div><h3>Descarga la app</h3><p>Usa el botón <a href="https://github.com/Dquezada2108/kb-x300-app/archive/refs/heads/main.zip">Descargar</a> y descomprime el ZIP donde quieras. Luego abre una terminal en esa carpeta e instala lo necesario:</p>
+        <pre><code>pip install -r requirements.txt</code></pre></div></div>
+      <div class="step"><div><h3>Conéctate a la cámara</h3><p>En la cámara ve a <b>Ajustes → WiFi</b> y actívalo. En tu PC conéctate a la red <code>KB-X300</code> (contraseña de fábrica <code>1234567890</code>). Si quieres seguir con internet, usa además el cable de red.</p></div></div>
+      <div class="step"><div><h3>Ábrela</h3><p>En Windows haz doble clic en <code>Iniciar KB-X300.bat</code>. En Mac o Linux ejecuta <code>python app.py</code>. Se abre sola en tu navegador.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="tecnico">
+  <div class="wrap">
+    <h2>Cómo funciona</h2>
+    <p class="sub">La X300 usa un chip <b>AIT</b>. Al encender su WiFi crea una red propia y responde en <code>192.72.1.1</code> con una interfaz HTTP sencilla. Esta app es un pequeño servidor en Python que hace de intermediario entre tu navegador y la cámara.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Acción</th><th>Petición a la cámara</th></tr></thead>
+        <tbody>
+          <tr><td>Leer estado y ajustes</td><td><code>/cgi-bin/Config.cgi?action=get&amp;property=Camera.*</code></td></tr>
+          <tr><td>Cambiar un ajuste</td><td><code>action=set&amp;property=Videores&amp;value=1080P60</code></td></tr>
+          <tr><td>Tomar foto</td><td><code>action=set&amp;property=Video&amp;value=capture</code></td></tr>
+          <tr><td>Iniciar / detener grabación</td><td><code>action=set&amp;property=Video&amp;value=record</code></td></tr>
+          <tr><td>Listar archivos</td><td><code>action=dir&amp;property=DCIM&amp;format=all&amp;count=32&amp;from=0</code></td></tr>
+          <tr><td>Borrar archivo</td><td><code>action=del&amp;property=$SD$Normal$ARCHIVO.MOV</code></td></tr>
+          <tr><td>Video en vivo</td><td><code>rtsp://192.72.1.1/liveRTSP/av4</code> (H.264, 640×360)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿Por qué no funciona directo desde esta página web?</summary>
+      <p>Los navegadores no dejan que una página de internet (https) controle un aparato de tu red local como la cámara (http). Además, el video en vivo de la cámara usa RTSP, un formato que el navegador no reproduce. Por eso la app corre en tu PC: así puede hablar con la cámara y mostrarte todo en el navegador.</p></details>
+    <details><summary>¿Funciona en el celular?</summary>
+      <p>Todavía no como app. Por ahora necesitas una computadora conectada al WiFi de la cámara.</p></details>
+    <details><summary>¿Modifica el firmware de la cámara?</summary>
+      <p>No. Solo usa los mismos comandos WiFi que usaba la app oficial. No hay riesgo de dañar la cámara.</p></details>
+    <details><summary>La app dice que la memoria está llena, pero no tiene archivos</summary>
+      <p>Revisa que la micro SD esté bien puesta o formatéala desde el menú de la cámara. Mientras tanto puedes usar <b>Grabar en PC</b>.</p></details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>KB-X300 App · proyecto personal, sin relación con Kaiser Baas.</span>
+    <a href="https://github.com/Dquezada2108/kb-x300-app">github.com/Dquezada2108/kb-x300-app</a>
+  </div>
+</footer>
+</body>
+</html>
